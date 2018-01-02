@@ -18,9 +18,12 @@
   },
   "homepage": "https://github.com/alexbadm/exchange-reactive-state#readme",
   "dependencies": {
-    "redux": "^3.7.2"
+    "@types/ws": "^3.2.1",
+    "redux": "^3.7.2",
+    "ws": "^3.3.3"
   },
   "devDependencies": {
+    "@types/node": "^8.5.2",
     "@types/redux": "^3.6.0"
   }
 }
