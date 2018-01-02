@@ -1,7 +1,6 @@
+import { AnyAction, combineReducers } from 'redux';
 import rates, { State as RatesState } from './rates';
 import wallets, { State as WalletsState } from './wallets';
-
-import { AnyAction, combineReducers } from 'redux';
 
 export let _: AnyAction;
 

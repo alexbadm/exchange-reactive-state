@@ -18,9 +18,8 @@
   },
   "homepage": "https://github.com/alexbadm/exchange-reactive-state#readme",
   "dependencies": {
-    "@types/ws": "^3.2.1",
-    "redux": "^3.7.2",
-    "ws": "^3.3.3"
+    "bfx-api": "git+ssh://git@github.com/alexbadm/bfx-api.git",
+    "redux": "^3.7.2"
   },
   "devDependencies": {
     "@types/node": "^8.5.2",
