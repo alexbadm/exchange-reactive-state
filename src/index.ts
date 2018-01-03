@@ -18,6 +18,10 @@ class ExchangeState {
     this.store = createStore();
   }
 
+  public getState() {
+    return this.store.getState();
+  }
+
   public start() {
     this.api.connect();
   }

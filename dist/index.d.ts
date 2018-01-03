@@ -5,6 +5,7 @@ declare class ExchangeState {
     private api;
     private store;
     constructor();
+    getState(): Store;
     start(): void;
     stop(): void;
     auth(key: string, secret: string): void;

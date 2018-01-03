@@ -14,6 +14,9 @@ var ExchangeState = (function () {
         this.api = new bfx_api_1.default();
         this.store = createStore();
     }
+    ExchangeState.prototype.getState = function () {
+        return this.store.getState();
+    };
     ExchangeState.prototype.start = function () {
         this.api.connect();
     };
