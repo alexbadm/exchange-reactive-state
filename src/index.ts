@@ -1,4 +1,5 @@
 import BfxApi from 'bfx-api';
+import { SubscribeEvent } from 'bfx-api/dist/BfxApi';
 import { createStore as reduxCreateStore, Store as ReduxStore } from 'redux';
 import { reducers, Store } from './reducers';
 
@@ -31,20 +32,17 @@ class ExchangeState {
   }
 
   public auth(key: string, secret: string) {
-    this.api.auth(key, secret,
+    return this.api.auth(key, secret,
       (msg: any[]) => {
         if (msg[0] === 0 && (msg[1] === 'ws' || msg[1] === 'wu')) {
           this.store.dispatch({ type: WalletsTypes[msg[1]], payload: msg[2] });
-          global.console.log('app wallets', (this.store.getState()).wallets);
-        } else {
-          global.console.log('app msg', msg);
         }
       },
     );
   }
 
-  public subscribeTicker(pair: string) {
-    this.api.subscribeTicker(pair, (msg: any) => {
+  public subscribeTicker(pair: string): Promise<SubscribeEvent> {
+    return this.api.subscribeTicker(pair, (msg: any) => {
       this.store.dispatch({
         payload: {
           data: msg[1],
@@ -52,8 +50,6 @@ class ExchangeState {
         },
         type: RatesTypes.DATA,
       });
-      global.console.log('app msg', msg);
-      global.console.log('app rates', (this.store.getState()).rates);
     });
   }
 }

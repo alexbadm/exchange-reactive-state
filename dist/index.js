@@ -25,19 +25,15 @@ var ExchangeState = (function () {
     };
     ExchangeState.prototype.auth = function (key, secret) {
         var _this = this;
-        this.api.auth(key, secret, function (msg) {
+        return this.api.auth(key, secret, function (msg) {
             if (msg[0] === 0 && (msg[1] === 'ws' || msg[1] === 'wu')) {
                 _this.store.dispatch({ type: wallets_1.ActionTypes[msg[1]], payload: msg[2] });
-                global.console.log('app wallets', (_this.store.getState()).wallets);
-            }
-            else {
-                global.console.log('app msg', msg);
             }
         });
     };
     ExchangeState.prototype.subscribeTicker = function (pair) {
         var _this = this;
-        this.api.subscribeTicker(pair, function (msg) {
+        return this.api.subscribeTicker(pair, function (msg) {
             _this.store.dispatch({
                 payload: {
                     data: msg[1],
@@ -45,8 +41,6 @@ var ExchangeState = (function () {
                 },
                 type: rates_1.ActionTypes.DATA,
             });
-            global.console.log('app msg', msg);
-            global.console.log('app rates', (_this.store.getState()).rates);
         });
     };
     return ExchangeState;
