@@ -7,38 +7,54 @@ var index_1 = require("./index");
 function subsError(e) {
     global.console.log('failed to subscribe', e);
 }
-var tradingTokens = [
-    'USD',
-    'BTC',
-    'IOT',
-    'ETH',
-    'OMG',
-    'DAT',
-    'DSH',
+var tradingTokensAll = [
+    'btc', 'usd', 'ltc', 'eth', 'etc', 'rrt', 'zec', 'xmr', 'dsh', 'eur', 'xrp',
+    'iot', 'eos', 'san', 'omg', 'bch', 'neo', 'etp', 'qtm', 'avt', 'edo', 'btg',
+    'dat', 'qsh', 'yyw', 'gnt', 'snt', 'bat', 'mna', 'fun', 'zrx', 'tnb', 'spk',
 ];
-var pairRules = {
-    BTC: ['USD', 'EUR'],
-    DAT: ['USD', 'BTC', 'ETH'],
-    DSH: ['USD', 'BTC'],
-    ETH: ['USD', 'BTC'],
-    IOT: ['USD', 'BTC', 'ETH', 'EUR'],
-    OMG: ['USD', 'BTC', 'ETH'],
-};
-var allPairs = Object.keys(pairRules).reduce(function (result, cur1) {
-    pairRules[cur1].forEach(function (cur2) {
-        var pair = cur1 + cur2;
-        result.push(pair);
+var symbols = [
+    'btcusd', 'ltcusd', 'ltcbtc', 'ethusd', 'ethbtc', 'etcbtc', 'etcusd',
+    'rrtusd', 'rrtbtc', 'zecusd', 'zecbtc', 'xmrusd', 'xmrbtc', 'dshusd',
+    'dshbtc', 'btceur', 'xrpusd', 'xrpbtc', 'iotusd', 'iotbtc', 'ioteth',
+    'eosusd', 'eosbtc', 'eoseth', 'sanusd', 'sanbtc', 'saneth', 'omgusd',
+    'omgbtc', 'omgeth', 'bchusd', 'bchbtc', 'bcheth', 'neousd', 'neobtc',
+    'neoeth', 'etpusd', 'etpbtc', 'etpeth', 'qtmusd', 'qtmbtc', 'qtmeth',
+    'avtusd', 'avtbtc', 'avteth', 'edousd', 'edobtc', 'edoeth', 'btgusd',
+    'btgbtc', 'datusd', 'datbtc', 'dateth', 'qshusd', 'qshbtc', 'qsheth',
+    'yywusd', 'yywbtc', 'yyweth', 'gntusd', 'gntbtc', 'gnteth', 'sntusd',
+    'sntbtc', 'snteth', 'ioteur', 'batusd', 'batbtc', 'bateth', 'mnausd',
+    'mnabtc', 'mnaeth', 'funusd', 'funbtc', 'funeth', 'zrxusd', 'zrxbtc',
+    'zrxeth', 'tnbusd', 'tnbbtc', 'tnbeth', 'spkusd', 'spkbtc', 'spketh',
+];
+var tradingTokens = tradingTokensAll.map(function (s) { return s.toUpperCase(); });
+var allPairs = symbols.map(function (s) { return s.toUpperCase(); });
+var pairRules = allPairs.reduce(function (result, pair) {
+    var coin = pair.slice(0, 3);
+    var currency = pair.slice(3);
+    if (result[coin]) {
+        result[coin].push(currency);
+    }
+    else {
+        result[coin] = [currency];
+    }
+    return result;
+}, {});
+var pairReverseRules = Object.keys(pairRules)
+    .reduce(function (result, coin) {
+    pairRules[coin].forEach(function (currency) {
+        if (result[currency]) {
+            result[currency].push(coin);
+        }
+        else {
+            result[currency] = [coin];
+        }
     });
     return result;
-}, []);
-var pairReverseRules = {
-    BTC: ['DAT', 'DSH', 'ETH', 'IOT', 'OMG'],
-    ETH: ['DAT', 'IOT', 'OMG'],
-    EUR: ['BTC', 'IOT'],
-    USD: ['BTC', 'DAT', 'DSH', 'ETH', 'IOT', 'OMG'],
-};
+}, {});
 var state = new index_1.default();
-state.auth('your key', 'your secret')
+var API_KEY = process.env.API_KEY || '';
+var API_SECRET = process.env.API_SECRET || '';
+state.auth(API_KEY, API_SECRET)
     .catch(function (e) { return global.console.log('auth error', e); });
 allPairs.forEach(function (pair) { return state.subscribeTicker(pair).catch(subsError); });
 state.start();
@@ -54,7 +70,9 @@ function calculateAllPrices() {
     });
     return allPrices;
 }
-function calculateChains() {
+function calculateChains(limit, threshold) {
+    if (limit === void 0) { limit = 0; }
+    if (threshold === void 0) { threshold = 0.01; }
     var prices = calculateAllPrices();
     var results = [];
     tradingTokens.forEach(function (baseCurrency) {
@@ -99,9 +117,9 @@ function calculateChains() {
         });
     });
     var leaders = results
-        .filter(function (res) { return res[0] > 0.01; })
+        .filter(function (res) { return res[0] > threshold; })
         .sort(function (a, b) { return b[0] - a[0]; });
-    return leaders.length < 4 ? leaders : [leaders[0], leaders[1], leaders[3]];
+    return (limit === 0 || leaders.length <= limit) ? leaders : leaders.slice(0, limit);
 }
 var statistics = {
     time: {
@@ -130,12 +148,12 @@ function addStatistics(key, value) {
 }
 setInterval(function () {
     var before = Date.now();
-    var top3 = calculateChains();
+    var topChains = calculateChains(6, 0.2);
     var after = Date.now();
     var time = after - before;
     addStatistics('time', time);
-    top3.forEach(function (res) { return addStatistics(res[1] + "-" + res[2] + "-" + res[3] + "-" + res[1], res[0]); });
-}, 3000);
+    topChains.forEach(function (res) { return addStatistics(res[1] + "-" + res[2] + "-" + res[3] + "-" + res[1], res[0]); });
+}, process.env.INTERVAL || 3000);
 var server = express();
 server.use(cors());
 server.get('/state', function (_, res) {
@@ -144,5 +162,5 @@ server.get('/state', function (_, res) {
 server.get('/statistics', function (_, res) {
     res.json(statistics).end();
 });
-var port = 3010;
+var port = process.env.PORT || 3000;
 server.listen(port, function () { return global.console.log('server is listening on ' + port); });
