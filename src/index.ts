@@ -4,6 +4,7 @@ import { createStore as reduxCreateStore, Store as ReduxStore } from 'redux';
 import { reducers, Store } from './reducers';
 
 import { ActionTypes as RatesTypes } from './reducers/rates';
+import { ActionTypes as TradesTypes } from './reducers/trades';
 import { ActionTypes as WalletsTypes } from './reducers/wallets';
 
 export function createStore(): ReduxStore<Store> {
@@ -34,8 +35,12 @@ class ExchangeState {
   public auth(key: string, secret: string) {
     return this.api.auth(key, secret,
       (msg: any[]) => {
-        if (msg[0] === 0 && (msg[1] === 'ws' || msg[1] === 'wu')) {
-          this.store.dispatch({ type: WalletsTypes[msg[1]], payload: msg[2] });
+        if (msg[0] === 0) {
+          if (msg[1] === 'ws' || msg[1] === 'wu') {
+            this.store.dispatch({ type: WalletsTypes[msg[1]], payload: msg[2] });
+          } else if (msg[1] === 'te' || msg[1] === 'tu') {
+            this.store.dispatch({ type: TradesTypes[msg[1]], payload: msg[2] });
+          }
         }
       },
     );

@@ -4,6 +4,7 @@ var bfx_api_1 = require("bfx-api");
 var redux_1 = require("redux");
 var reducers_1 = require("./reducers");
 var rates_1 = require("./reducers/rates");
+var trades_1 = require("./reducers/trades");
 var wallets_1 = require("./reducers/wallets");
 function createStore() {
     return redux_1.createStore(reducers_1.reducers);
@@ -26,8 +27,13 @@ var ExchangeState = (function () {
     ExchangeState.prototype.auth = function (key, secret) {
         var _this = this;
         return this.api.auth(key, secret, function (msg) {
-            if (msg[0] === 0 && (msg[1] === 'ws' || msg[1] === 'wu')) {
-                _this.store.dispatch({ type: wallets_1.ActionTypes[msg[1]], payload: msg[2] });
+            if (msg[0] === 0) {
+                if (msg[1] === 'ws' || msg[1] === 'wu') {
+                    _this.store.dispatch({ type: wallets_1.ActionTypes[msg[1]], payload: msg[2] });
+                }
+                else if (msg[1] === 'te' || msg[1] === 'tu') {
+                    _this.store.dispatch({ type: trades_1.ActionTypes[msg[1]], payload: msg[2] });
+                }
             }
         });
     };

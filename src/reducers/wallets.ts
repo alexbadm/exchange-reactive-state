@@ -28,8 +28,8 @@ const wallets: Reducer<State> = (state: State = [], { payload, type }: AnyAction
 
     case ActionTypes.wu:
       return state
-        .filter((bal) => bal[0] !== payload[0] && bal[1] !== payload[1])
-        .concat(payload);
+        .filter((bal) => !(bal[0] === payload[0] && bal[1] === payload[1]))
+        .concat([payload]);
 
     default:
       return state;
