@@ -1,6 +1,7 @@
-import * as cors from 'cors';
 import * as express from 'express';
 import ExchangeState from './index';
+
+const port = process.env.PORT || 3000;
 
 function subsError(e: any) {
   global.console.log('failed to subscribe', e);
@@ -28,18 +29,12 @@ const allPairs: string[] = symbols.filter((s) => ~onlyCoins.indexOf(s.slice(0, 3
 const state = new ExchangeState();
 const API_KEY = process.env.API_KEY || '';
 const API_SECRET = process.env.API_SECRET || '';
+
 state.auth(API_KEY, API_SECRET)
 .catch((e: any) => global.console.log('auth error', e));
 allPairs.forEach((pair) => state.subscribeTicker(pair).catch(subsError));
 state.start();
 
 const server = express();
-// server.use(express.json());
-server.use(cors());
-
-server.use((_, res) => {
-  res.json(state.getState()).end();
-});
-
-const port = process.env.PORT || 3000;
+server.use((_, res) => res.json(state.getState()));
 server.listen(port, () => global.console.log('server is listening on ' + port));

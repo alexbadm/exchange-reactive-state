@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var cors = require("cors");
 var express = require("express");
 var index_1 = require("./index");
+var port = process.env.PORT || 3000;
 function subsError(e) {
     global.console.log('failed to subscribe', e);
 }
@@ -30,9 +30,5 @@ state.auth(API_KEY, API_SECRET)
 allPairs.forEach(function (pair) { return state.subscribeTicker(pair).catch(subsError); });
 state.start();
 var server = express();
-server.use(cors());
-server.use(function (_, res) {
-    res.json(state.getState()).end();
-});
-var port = process.env.PORT || 3000;
+server.use(function (_, res) { return res.json(state.getState()); });
 server.listen(port, function () { return global.console.log('server is listening on ' + port); });
