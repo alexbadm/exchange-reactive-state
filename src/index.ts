@@ -12,7 +12,7 @@ export function createStore(): ReduxStore<Store> {
 }
 
 class ExchangeState {
-  private api: BfxApi;
+  public api: BfxApi;
   private store: ReduxStore<Store>;
 
   constructor() {
