@@ -1,5 +1,6 @@
 import BfxApi from 'bfx-api';
-import { SubscribeEvent } from 'bfx-api/dist/BfxApi';
+import { SnapshotCallback } from 'bfx-api/dist/BfxApi';
+import { SubscribeEvent } from 'bfx-api/dist/bitfinexTypes';
 import { createStore as reduxCreateStore, Store as ReduxStore } from 'redux';
 import { reducers, Store } from './reducers';
 
@@ -32,7 +33,7 @@ class ExchangeState {
     this.api.close();
   }
 
-  public auth(key: string, secret: string) {
+  public auth(key: string, secret: string, callback?: SnapshotCallback) {
     return this.api.auth(key, secret,
       (msg: any[]) => {
         if (msg[0] === 0) {
@@ -41,6 +42,9 @@ class ExchangeState {
           } else if (msg[1] === 'te' || msg[1] === 'tu') {
             this.store.dispatch({ type: TradesTypes[msg[1]], payload: msg[2] });
           }
+        }
+        if (callback) {
+          callback(msg);
         }
       },
     );

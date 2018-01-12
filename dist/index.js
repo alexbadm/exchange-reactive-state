@@ -24,7 +24,7 @@ var ExchangeState = (function () {
     ExchangeState.prototype.stop = function () {
         this.api.close();
     };
-    ExchangeState.prototype.auth = function (key, secret) {
+    ExchangeState.prototype.auth = function (key, secret, callback) {
         var _this = this;
         return this.api.auth(key, secret, function (msg) {
             if (msg[0] === 0) {
@@ -34,6 +34,9 @@ var ExchangeState = (function () {
                 else if (msg[1] === 'te' || msg[1] === 'tu') {
                     _this.store.dispatch({ type: trades_1.ActionTypes[msg[1]], payload: msg[2] });
                 }
+            }
+            if (callback) {
+                callback(msg);
             }
         });
     };
