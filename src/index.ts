@@ -2,11 +2,7 @@ import BfxApi from 'bfx-api';
 import { SnapshotCallback } from 'bfx-api/dist/BfxApi';
 import { SubscribeEvent } from 'bfx-api/dist/bitfinexTypes';
 import { createStore as reduxCreateStore, Store as ReduxStore } from 'redux';
-import { reducers, Store } from './reducers';
-
-import { ActionTypes as RatesTypes } from './reducers/rates';
-import { ActionTypes as TradesTypes } from './reducers/trades';
-import { ActionTypes as WalletsTypes } from './reducers/wallets';
+import { ActionTypes, reducers, Store } from './reducers';
 
 export function createStore(): ReduxStore<Store> {
   return reduxCreateStore(reducers);
@@ -37,14 +33,23 @@ class ExchangeState {
     return this.api.auth(key, secret,
       (msg: any[]) => {
         if (msg[0] === 0) {
-          if (msg[1] === 'ws' || msg[1] === 'wu') {
-            this.store.dispatch({ type: WalletsTypes[msg[1]], payload: msg[2] });
-          } else if (msg[1] === 'te' || msg[1] === 'tu') {
-            this.store.dispatch({ type: TradesTypes[msg[1]], payload: msg[2] });
+          const sign = msg[1];
+          const payload = msg[2];
+
+          switch (sign[0]) {
+            case 'o':
+              this.store.dispatch({ type: ActionTypes.orders[sign], payload });
+              break;
+            case 't':
+              this.store.dispatch({ type: ActionTypes.trades[sign], payload });
+              break;
+            case 'w':
+              this.store.dispatch({ type: ActionTypes.wallets[sign], payload });
+              break;
           }
-        }
-        if (callback) {
-          callback(msg);
+          if (callback) {
+            callback(msg);
+          }
         }
       },
     );
@@ -57,7 +62,7 @@ class ExchangeState {
           data: msg[1],
           pair,
         },
-        type: RatesTypes.DATA,
+        type: ActionTypes.rates.DATA,
       });
     });
   }
